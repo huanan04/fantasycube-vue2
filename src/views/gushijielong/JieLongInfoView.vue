@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h3 class="jielongtitle">{{group.name ?group.name : groupId}}正在进行的接龙</h3>
+    <h3 class="jielongtitle" v-if="groupId">{{group ?group.name : groupId}}正在进行的接龙</h3>
     <div v-if="list">
       <div v-for="item in list" :key="item.id">
         <h4 class="jielongtitle">第{{item.sequence}}回</h4>
@@ -13,8 +13,7 @@
 </template>
 
 <script>
-import service from "@/api/request";
-
+import {jieLongInfo,jieLongInfo1} from "@/api/http/jielongHttp";
 export default {
   name: "JieLongInfoView",
   data() {
@@ -36,12 +35,19 @@ export default {
       this.host = s
       this.groupId = this.host
     }
+
+    jieLongInfo1().then(e=>{
+      console.log(e)
+    })
     if (this.list.length == 0 && this.groupId) {
-      service.get("/gushijielong/v1/get_now_jie_long_by_group/" + this.groupId)
+      jieLongInfo({titleId:1,groupId:this.groupId})
           .then(e => {
-            this.list = e.data.contents
-            this.group = e.data.group
-          })
+            console.log(e)
+            // this.list = e.data.contents
+            // this.group = e.data.group
+          }).catch(e=>{
+        console.log(e,'error')
+      })
     }
     if (this.groupId) {
       this.isTrue = true
