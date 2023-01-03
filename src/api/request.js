@@ -1,88 +1,102 @@
-import axios from 'axios'
-import store from "@/store/index";
-import router from "@/router";
-// let url = 'http://47.242.169.19:4003'
-// let url = 'http://192.168.31.55:4003'
-let url = 'http://192.168.0.155:4003'
+/**axios封装
+ * 请求拦截、相应拦截、错误统一处理
+ */
+import axios from 'axios';
+import store from '../store/index'
+import router from "@/router/index";
 
-// if (!process.env.DEV) {
-//     url = '127.0.0.1:4002'
-// }
-
-const service = axios.create({
-    baseURL: url,
-    timeout: 10000,
-    headers:
-        {'Content-Type': 'application/json;charset=utf-8'}
-
-})
-
-function getToken() {
-    let token = store.state.token;
-    return token ? token : null
+// 环境的切换
+if (process.env.NODE_ENV == 'development') {
+    axios.defaults.baseURL = 'http://192.168.31.55:4003/';
+} else if (process.env.NODE_ENV == 'production') {
+    axios.defaults.baseURL = 'http://47.242.169.19:4003/';
 }
 
-service.interceptors.request.use(
+// 请求超时时间
+axios.defaults.timeout = 10000;
+
+// post请求头
+axios.defaults.headers.post['Content-Type'] = 'application/json;charset=UTF-8';
+
+// 请求拦截器
+axios.interceptors.request.use(
     config => {
-        config.headers.Authorization = getToken()
-        return config
+        // 每次发送请求之前判断是否存在token，如果存在，则统一在http请求的header都加上token，不用每次请求都手动添加了
+        // 即使本地存在token，也有可能token是过期的，所以在响应拦截器中要对返回状态进行判断
+        const token = store.state.token;
+        token && (config.headers.Authorization = token);
+        return config;
     },
+    error => {
+        return Promise.error(error);
+    })
+
+// 响应拦截器
+axios.interceptors.response.use(
     response => {
-        // 如果返回的状态码为200，说明接口请求成功，可以正常拿到数据
-        // 否则的话抛出错误
         if (response.status === 200) {
             return Promise.resolve(response);
         } else {
             return Promise.reject(response);
         }
     },
+    // 服务器状态码不是200的情况    
     error => {
-        if (error.response.code) {
-            switch (error.response.code){
-                // 未登录请求
+        console.log('sibai',error)
+        if (error.response.status) {
+            switch (error.response.status) {
+                // 401: 未登录                
+                // 未登录则跳转登录页面，并携带当前页面的路径                
+                // 在登录成功后返回当前页面，这一步需要在登录页操作。                
                 case 401:
                     router.replace({
-                        path:'/login',
-                        query:{
-                            redirect: router.currentRoute.fullPath
-                        }
-                    })
-                    break
+                        path: '/login',
+                        query: { redirect: router.currentRoute.fullPath }
+                    });
+                    break;
+                // 其他错误，直接抛出错误提示
                 default:
-                    //抛出弹窗提示
+                    // Toast({
+                    //     message: error.response.data.message,
+                    //     duration: 1500,
+                    //     forbidClick: true
+                    // });
             }
+            return Promise.reject(error.response);
         }
-        return Promise.reject(error)
     }
-)
-
-export function get(url,params){
-    return new Promise((resolve,reject)=>{
-        axios.get(url,{
-            headers:{
-                'Content-Type': 'application/json'
-            },
-            params:params
-        }).then(e=>{
-            resolve(e.data)
-        }).catch(e=>{
-            reject(e.data())
+);
+/**
+ * get方法，对应get请求
+ * @param {String} url [请求的url地址]
+ * @param {Object} params [请求时携带的参数]
+ */
+export function get(url, params){
+    return new Promise((resolve, reject) =>{
+        axios.get(url, {
+            params: params
         })
-    })
-}
-export function post(url, params) {
-    return new Promise((resolve, reject) => {
-        axios.post(url, JSON.stringify(params),{
-            headers:{
-                'Content-Type': 'application/json'
-            },
-        })
-            .then(e => {
-                resolve(e.data);
+            .then(res => {
+                resolve(res.data);
             })
-            .catch(e =>{
-                reject(e.data)
+            .catch(err => {
+                reject(err.data)
             })
     });
 }
-export default service
+/**
+ * post方法，对应post请求
+ * @param {String} url [请求的url地址]
+ * @param {Object} params [请求时携带的参数]
+ */
+export function post(url, params) {
+    return new Promise((resolve, reject) => {
+        axios.post(url, JSON.stringify(params))
+            .then(res => {
+                resolve(res.data);
+            })
+            .catch(err => {
+                reject(err.data)
+            })
+    });
+}
