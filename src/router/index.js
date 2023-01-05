@@ -1,18 +1,24 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import JieLongInfoView from "@/views/JieLongInfoView.vue";
-import JieLongHistoryView from "@/components/JieLongHistoryView.vue";
-
+import JieLongInfoView from "@/views/gushijielong/JieLongInfoView.vue";
+import JieLongHistoryView from "@/views/gushijielong/JieLongHistoryView.vue";
+import JieLongHomeView from "@/views/gushijielong/JieLongHomeView.vue";
 Vue.use(VueRouter)
 
 const routes = [
     {
-        path: '/JieLongInfoView/:groupId',
+        path: '/home',
+        name: 'JieLongHomeView',
+        meta: {
+            title:'接龙首页'
+        },
+        component: JieLongHomeView
+    },
+    {
+        path: '/JieLongInfo/:groupId',
         name: 'jieLongInfoView',
         meta: {
-            title: '接龙详细',
-            isLogin: true,
-            requiresAuth: true
+            title: '接龙详细'
         },
         component: JieLongInfoView
     },

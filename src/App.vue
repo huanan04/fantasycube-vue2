@@ -1,15 +1,15 @@
 <template>
   <div id="app">
 <!--    <router-link to="/jielong/info/580355317">接龙详细</router-link>-->
-    <JieLongInfoView></JieLongInfoView>
-<!--    <router-view />-->
+<!--    <JieLongInfoView></JieLongInfoView>-->
+    <router-view />
   </div>
 </template>
 <script>
-import JieLongInfoView from "@/views/JieLongInfoView.vue";
+// import JieLongInfoView from "@/views/gushijielong/JieLongInfoView.vue";
 
 export default {
-  components: {JieLongInfoView}
+  // components: {JieLongInfoView}
 }
 
 </script>

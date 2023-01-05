@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v- v-if="group">
     <h3 class="jieLongTitle">{{group ?group.name : groupId}}正在进行的接龙</h3>
     <div v-if="list">
       <div v-for="item in list" :key="item.id">

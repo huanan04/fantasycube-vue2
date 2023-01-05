@@ -1,72 +1,58 @@
 <template>
   <div>
-    <h3 class="jielongtitle" v-if="groupId">{{group ?group.name : groupId}}正在进行的接龙</h3>
-    <div v-if="list">
-      <div v-for="item in list" :key="item.id">
-        <h4 class="jielongtitle">第{{item.sequence}}回</h4>
-        <span>作者：{{item.jieLongName}}</span><br>
-        <span v-if="item.likes != 0">点赞：{{item.likes}}</span>
-        <p v-for="(text,i) in item.formattedText" :key="i" >{{text}}</p>
-      </div>
-    </div>
+    <h1>接龙信息</h1>
+    <JieLongInfo :group="group" :groupId="groupId" :list="list"/>
   </div>
 </template>
 
 <script>
-import {jieLongInfo,jieLongInfo1} from "@/api/http/jielongHttp";
+import {getJieLongInfo} from "@/api/http/jielongHttp";
+import JieLongInfo from "@/components/JieLongInfo.vue";
+
 export default {
   name: "JieLongInfoView",
+  components: {JieLongInfo},
   data() {
     return {
       list: [],
-      groupId: 299468208,
+      groupId: 0,
       group: null,
-      count: 0,
       isTrue: false,
-      host:window.location
     }
   },
   created() {
+    console.log(this.$route,11111)
     this.groupId = this.$route.query.groupId;
-    this.getInfo()
-    if (!this.groupId){
+    if (this.groupId != 0) {
       let location = window.location;
-      let s = location.href.slice(location.href.indexOf('=')+1,location.href.length);
-      this.host = s
-      this.groupId = this.host
+      this.groupId = location.href.slice(location.href.indexOf('=') + 1, location.href.length);
+    } else {
+      this.getInfo()
     }
-
-    jieLongInfo1().then(e=>{
-      console.log(e)
-    })
     if (this.list.length == 0 && this.groupId) {
-      jieLongInfo({titleId:1,groupId:this.groupId})
-          .then(e => {
-            console.log(e)
-            // this.list = e.data.contents
-            // this.group = e.data.group
-          }).catch(e=>{
-        console.log(e,'error')
-      })
+      this.getInfo()
     }
     if (this.groupId) {
       this.isTrue = true
     }
   },
   methods: {
+    /**
+     * 获取当前接龙
+     */
     getInfo() {
-      this.count++
-      // service.get("/gushijielong/v1/get_now_jie_long_by_group", {params: {"groupId": this.groupId}})
-      //     .then(e=>{
-      //       this.list = e.data
-      //     })
+      getJieLongInfo(this.groupId)
+          .then(e => {
+            this.list = e.data.contents
+            this.group = e.data.group
+          }).catch(e => {
+        console.log(e, '请求报错')
+      })
     }
   }
 }
 </script>
 
 <style scoped>
-.jielongtitle{
-  text-align:center;
-}
+
 </style>

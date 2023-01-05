@@ -7,7 +7,8 @@ import router from "@/router/index";
 
 // 环境的切换
 if (process.env.NODE_ENV == 'development') {
-    axios.defaults.baseURL = 'http://192.168.31.55:4003/'
+    // axios.defaults.baseURL = 'http://192.168.31.55:4003/'
+    axios.defaults.baseURL = 'http://192.168.0.155:4003/'
 } else if (process.env.NODE_ENV == 'production') {
     axios.defaults.baseURL = 'http://124.70.98.183:4003/'
 }
